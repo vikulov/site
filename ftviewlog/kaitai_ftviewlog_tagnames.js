@@ -48,7 +48,6 @@ var FtviewTagnameslog = (function() {
   return FtviewTagnameslog;
 })();
 
-// Export for amd environments
 if (typeof define === 'function' && define.amd) {
   define('FtviewTagnameslog', [], function() {
     return FtviewTagnameslog;

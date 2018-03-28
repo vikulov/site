@@ -46,22 +46,6 @@ var FtviewFloatlog = (function() {
       this.internal = this._io.readS4le();
     }
 
-    /**
-     *  YYYY-MM-DD
-     */
-
-    /**
-     * HH-MM-SS
-     */
-
-    /**
-     * DDD
-     */
-
-    /**
-     * DDDDD
-     */
-
     return FloatRowT;
   })();
 
