@@ -4,36 +4,43 @@
 <head>
   <meta charset="utf-8">
 
-  <title>Викулов Евгений Сергеевич</title>
+  <title>FTViewlog</title>
   <meta name="author" content="eugene@vikulov.com">
 </head>
 
 <body>
   <input type="file" id="files" name="files[]" multiple />
   <output id="list"></output>
+  <table id="datatable"></table>
 
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script src="KaitaiStream.js"></script>
 <script src="kaitai_ftviewlog_float.js"></script>
-<script src="kaitai_ftviewlog_tagnames.js"> </script>
-
-
+<script src="kaitai_ftviewlog_tagnames.js"></script>
 <script>
+  function transform(log) {
+    var newArr = Array();
+    var parser = d3.timeParse("%B %d, %Y");
+    for (var i = 0, rows = log.rows;i < log.header.numRecords;i++) {
+      if (rows[i].status != ' ') continue;
+
+
+    }
+  }
+
+
+
   function handleFileSelect(evt) {
-    var files = evt.target.files; // FileList object
-
-    // Loop through the FileList and render image files as thumbnails.
+    var files = evt.target.files;
     for (var i = 0, f; f = files[i]; i++) {
-
       var reader = new FileReader();
-
-      // Closure to capture the file information.
       reader.onload = (function(theFile) {
         return function(e) {
-          var data = new FtviewTagnameslog(new KaitaiStream(reader.result))
+          var data = new FtviewFloatlog(new KaitaiStream(reader.result))
           var span = document.createElement('span');
-          span.innerHTML = [data.numRecords].join('');
+          span.innerHTML = [transform(data), data.header.numRecords].join(' ');
           document.getElementById('list').insertBefore(span, null);
+          var table = document.createElement('table');
         };
       })(f);
       reader.readAsArrayBuffer(f);
