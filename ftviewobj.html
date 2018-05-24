@@ -2,30 +2,94 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>RSLogix 5000 Source Protection Decryption</title>
-<body>
-  
-  <form><table><tr>
-  <td>
-    <label for="textin">Input (with encrypted sections)</label>
-    <br />
-    <textarea id="textin" name="textin" rows="10" cols="40" placeholder="Paste the text of your exported XML here (starts with <?xml version=...)"></textarea>
-  </td>
-  <td style="vertical-align: middle;">
-    <button id="button" type="button">Decrypt &rarr;</button>
-  </td>
-  <td>
-    <label for="textout">Output (decrypted)</label>
-    <br />
-    <textarea id="textout" name="textout" rows="10" cols="40" placeholder="Decrypted text will appear here"></textarea>
-  </td>
-</tr></table></form>
-<div id="output">
-Drag a .L5X file onto this page, or open it in Notepad and paste its contents into the text box.
-<br />
-For more instructions, read the <a href="https://github.com/skdatmonster/DecryptSourceProtection/blob/master/README.md">README</a>.
-<br />
-</div>
+<title>FTView object modifier</title>
 
+<body>
+  <form>
+    <table>
+      <tr>
+        <td colspan="2">
+          <label for="textin">Обьект</label>
+          <br />
+          <textarea id="textin" name="textin" rows="10" cols="40" placeholder="Вставьте сюда текст <polygon..../>"></textarea>
+        </td>
+        <td style="vertical-align: middle;">
+          <button id="button" type="button">Размножить &rarr;</button>
+        </td>
+        <td>
+          <label for="textout">Вывод</label>
+          <br />
+          <textarea id="textout" name="textout" rows="10" cols="40" placeholder="Размноженные обьекты"></textarea>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="start">Центр</label>
+          <br/>
+          <input type="color" id="start" value="#ffffff"></input>
+        </td>
+        <td>
+          <label for="end">Край</label>
+          <br/>
+          <input type="color" id="end" value="#000000"></input>
+        </td>
+      </tr>
+    </table>
+  </form>
 </body>
+<script>
+
+  function getRGB(value) {
+    var rgb = [];
+    for (var i = 1; i < value.length;i += 2) {
+      rgb.push(parseInt(value.substring(i, i + 2), 16));
+    }
+    return rgb;
+  }
+
+  function diffMax(s, e) {
+    var res = [], max = 0, diff;
+    for (var i = 0; i < 3; i += 1) {
+      res[i] = s[i] - e[i];
+      diff = Math.abs(s[i] - e[i]);
+      max = max > diff?max:diff;
+    }
+    res[3] = max * 1.0;
+    return res;
+  }
+
+  function decimalToHex(d) {
+    var hex = Number(d).toString(16);
+    return hex.length == 2?hex:("0" + hex);
+  }
+
+  function getResult(polygonNode, scolor, ecolor) {
+    var sarray = getRGB(scolor), earray = getRGB(ecolor);
+    var serializer = new XMLSerializer();
+    var dm = diffMax(sarray, earray), r, g, b, res = "", bgcolor;
+    for (var i = 0;i <= dm[3]; i++) {
+      r = decimalToHex(sarray[0] - Math.round(dm[0] * i / dm[3]));
+      g = decimalToHex(sarray[1] - Math.round(dm[1] * i / dm[3]));
+      b = decimalToHex(sarray[2] - Math.round(dm[2] * i / dm[3]));
+      bgcolor = "#" + r + g + b;
+      polygonNode.setAttribute("backColor", bgcolor);
+      polygonNode.setAttribute("name", "id" + i);
+      polygonNode.setAttribute("width", "" + (dm[3] - i + 1));
+      res += serializer.serializeToString(polygonNode)  +  "\r\n";
+    }
+    return res;
+  }
+
+  document.getElementById('button').addEventListener('click', function(event) {
+    var parser = new DOMParser();
+    var xmlString = document.getElementById('textin').value;
+    var doc = parser.parseFromString(xmlString, "application/xml");
+    var res;
+    scolor =  document.getElementById('start').value;
+    ecolor =  document.getElementById('end').value;
+    res = getResult(doc.querySelector('polygon'), scolor, ecolor);
+    document.getElementById('textout').value = res;
+  });
+
+</script>
 </html>
